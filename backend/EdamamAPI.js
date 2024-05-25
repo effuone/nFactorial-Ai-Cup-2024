@@ -1,4 +1,5 @@
 require("dotenv").config();
+const axios = require('axios');
 
 class EdamamAPI {
   constructor(
@@ -21,22 +22,15 @@ class EdamamAPI {
     console.log(requestBody);
 
     try {
-      const response = await fetch(url, {
-        method: 'POST',
+      const response = await axios.post(url, requestBody, {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
+      console.log(response.data);
 
-      const data = await response.json();
-      console.log(data);
-
-      return data;
+      return response.data;
     } catch (error) {
       console.error("Error fetching recipe analysis:", error);
       return null;
