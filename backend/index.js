@@ -1,6 +1,5 @@
-const ImageAnalyzer = require("./ImageAnalyser");
+require('dotenv').config()
+const MealDeducer = require("./MealDeducer")
 
-// Usage
-const imageAnalyzer = new ImageAnalyzer("img/cheeseburger.jpg", (threshold = 0.05));
-
-imageAnalyzer.analyzeImage();
+const deducer = new MealDeducer(process.env.GROQ_API)
+deducer.main()
