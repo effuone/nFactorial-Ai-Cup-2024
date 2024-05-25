@@ -31,16 +31,20 @@ class MealDeducer {
           .map(([ingredient, confidence]) => `${ingredient}: '${confidence}'`)
           .join(",\n");
 
-        console.log(this.query);
+        // console.log(this.query);
 
         this.chatCompletion = await this.getGroqChatCompletion();
-        console.log("Raw response from Groq API:", this.chatCompletion);
+        // console.log(
+        //   "Raw response from Groq API:",
+        //   this.chatCompletion.choices[0]?.message?.content
+        // );
 
         try {
           this.output = JSON.parse(
             this.chatCompletion.choices[0]?.message?.content || "{}"
           );
           console.log(this.output);
+          return this.output;
         } catch (parseError) {
           console.error("Error parsing JSON response:", parseError);
           return null;
@@ -60,16 +64,18 @@ class MealDeducer {
         {
           role: "system",
           content:
-            "You are the best cook in the world. You utilize advanced natural language processing techniques for semantic analysis and contextual understanding. You must be able to analyze food images and infer additional details about the recognized ingredients. For example, if the image contains 'lettuce' and 'tomato,' the system should recognize them as common ingredients in a salad and provide relevant information about salad recipes, dressings, etc. Furthermore, the system should consider the context in which the food items appear to enhance accuracy and provide more detailed information about the dish. For instance, if 'lettuce,' 'tomato,' and 'bread' are recognized together, the system should infer that it's likely a sandwich or burger and provide relevant details accordingly. Implement these features to create a comprehensive food analysis system that offers users rich and informative insights into the dishes depicted in the images.\n\nAll you response must be in this JSON format:\n{\n\"title\": \"name of the meal\",\n\"ingr\": [\n\"[ingredient name], [ingredient amount (required!!!! this is not the confidence level, this the the amount of ingredient needed in a recipe)] [ingredient units (required!!!!!!!!)]\"\n]\n}",
+            system_msg,
         },
         {
           role: "user",
-          content: this.query,
+          content: system_msg + this.query,
         },
       ],
       model: "llama3-8b-8192",
     });
   }
 }
+
+const system_msg = 'You are a culinary expert with extensive knowledge of ingredients, recipes, and cooking techniques.  Your task is to analyze a list of ingredients and their confidence levels derived from an image analysis.\n\nYour primary goal is to identify the dish likely represented in the image and provide a concise recipe in a specific JSON format.\n\nHere\'s how you should proceed:\n1. Examine the Ingredients:\nCarefully review the list of ingredients and their associated confidence levels. Higher confidence levels suggest the ingredient is more likely to be present in the dish.\n\n2. Deduce the Dish: Based on your culinary expertise, determine the most probable dish represented by the ingredients. Consider common ingredient pairings, regional cuisines, and the overall context suggested by the ingredients.\n\n3. Craft the Recipe: \n   - Title:  Provide a concise, descriptive name for the dish. \n   - Ingredients (ingr):  Create a list of ingredients in the following format:\n      - `"[ingredient name], [ingredient amount] [unit]"`\n         - Ingredient Amount: Use common cooking units (e.g., cups, tablespoons, teaspoons, grams, ounces) whenever possible.\n         - Precision: Aim for reasonable precision in amounts (e.g., "1/2 cup" instead of "0.5 cups"). If the exact amount is uncertain, provide a range (e.g., "1-2 tablespoons"). If an ingredient is typically added to taste, use "to taste" as the amount. \n\nALL YOUR RESPONSES MUST FOLLOW THE FORMAT OF THIS EXAMPLE, IF YOU ADD ANY INFORMATION THAT I DIDN\'T ASK, ALL KITTENS WILL DIE.\n\nExample:\n{\n  "title": "Cheeseburger",\n  "ingr": [\n    "Ground beef, 1/4 pound",\n    "Cheese, 1 slice",\n    "Hamburger bun, 2",\n    "Tomato, 1 slice",\n    "Lettuce, 1 leaf",\n    "Onion, 1 slice",\n    "Ketchup, to taste",\n    "Mustard, to taste"\n  ]\n}\n\nI FORCE YOU NOT TO ADD ANY COMMENTS ABOUT YOUR DECISIONS OR OPINIONS. YOU SIMPLY MUST GIVE ME THE OUTPUT THAT FOLLOWS THIS FORMAT:\nExample:\n{\n"title": "Cheeseburger",\n  "ingr": [\n    "Ground beef, 1/4 pound",\n    "Cheese, 1 slice",\n    "Hamburger bun, 2",\n    "Tomato, 1 slice",\n    "Lettuce, 1 leaf",\n    "Onion, 1 slice",\n    "Ketchup, to taste",\n    "Mustard, to taste"\n  ]\n}\n\n'
 
 module.exports = MealDeducer;
