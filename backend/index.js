@@ -3,7 +3,7 @@ const MealDeducer = require("./MealDeducer");
 const EdamamAPI = require("./EdamamAPI");
 
 async function run() {
-  const deducer = new MealDeducer("img/cheeseburger.jpg", 0.1);
+  const deducer = new MealDeducer("img/chicken-broccoli.jpg", 0.1);
   const output = await deducer.main();
 
   const edamam = new EdamamAPI();
