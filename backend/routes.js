@@ -5,6 +5,7 @@ const router = express.Router()
 router.get('/analysis', async (req, res) => {
   const nutrients = await run();
   res.json(nutrients)
+  res.status(200)
 })
 
 module.exports = router;
